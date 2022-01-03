@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#66A17BE4"
+    android:textAlignment="center"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="433dp"
+        android:layout_height="481dp"
+        android:layout_marginTop="12dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/HelloText"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="-13dp">
+
+        <EditText
+            android:id="@+id/usernameSignUp"
+            android:layout_width="336dp"
+            android:layout_height="56dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="7dp"
+            android:ems="10"
+            android:hint="Enter User Name"
+            android:inputType="textEmailAddress"
+            android:padding="5dp" />
+
+        <EditText
+            android:id="@+id/EmailSignUp"
+            android:layout_width="336dp"
+            android:layout_height="63dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="7dp"
+            android:ems="10"
+            android:hint="Enter Email Address"
+            android:padding="5dp" />
+
+        <EditText
+            android:id="@+id/PasswordSignUp"
+            android:layout_width="338dp"
+            android:layout_height="70dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="7dp"
+            android:ems="10"
+            android:hint="Enter Password"
+            android:inputType="textPassword"
+            android:padding="5dp" />
+
+        <TextView
+            android:id="@+id/AlreadyAccount"
+            android:layout_width="329dp"
+            android:layout_height="33dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="7dp"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="Don't have an account? Sign in"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/SignUP"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="7dp"
+            android:background="@drawable/buttonbackground"
+            android:gravity="center"
+            android:hapticFeedbackEnabled="false"
+            android:padding="5dp"
+            android:text="Log In"
+            android:textAlignment="center"
+            android:textColor="#000000"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/googleSignUp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="7dp"
+            android:background="@drawable/buttonbackground"
+            android:gravity="center"
+            android:hapticFeedbackEnabled="false"
+            android:padding="5dp"
+            android:text="Google"
+            android:textAlignment="center"
+            android:textColor="#000000"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/phone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="7dp"
+            android:background="@drawable/buttonbackground"
+            android:gravity="center"
+            android:hapticFeedbackEnabled="false"
+            android:padding="5dp"
+            android:text="phone"
+            android:textAlignment="center"
+            android:textColor="#000000"
+            android:textSize="20sp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/HelloText"
+        android:layout_width="360dp"
+        android:layout_height="98dp"
+        android:fontFamily="sans-serif"
+        android:text="Hello! Please Log In to continue"
+        android:textColor="#000000"
+        android:textSize="40sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.313"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.208" />
+
+    <TextView
+        android:id="@+id/Heading1"
+        android:layout_width="354dp"
+        android:layout_height="66dp"
+        android:text="GPS TRACKER"
+        android:textAlignment="center"
+        android:textColor="#C30202"
+        android:textSize="50sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.491"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.009" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -30,7 +30,7 @@ public class MapsActivity2 extends FragmentActivity implements OnMapReadyCallbac
     private FirebaseDatabase database;
     private DatabaseReference ref;
     private LocationManager manager;
-
+//    String  email= getIntent().getStringExtra("email");
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,6 +42,7 @@ public class MapsActivity2 extends FragmentActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
     }
 
     /**
@@ -59,7 +60,7 @@ public class MapsActivity2 extends FragmentActivity implements OnMapReadyCallbac
 
         // Add a marker in Sydney and move the camera
         database= FirebaseDatabase.getInstance();
-        ref=database.getReference().child("User-6969");
+        ref=database.getReference().child("ds");
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {  if(snapshot.exists()) {
@@ -70,7 +71,7 @@ public class MapsActivity2 extends FragmentActivity implements OnMapReadyCallbac
                         mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(),location.getLongitude())).title("Marker in Sydney"));
 //mMap.setMinZoomPreference(12);
 //mMap.getUiSettings().setAllGesturesEnabled(true);
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(),location.getLongitude()),10));   }
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(),location.getLongitude()),20));   }
                 } catch (Exception e) {
                     Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                 }

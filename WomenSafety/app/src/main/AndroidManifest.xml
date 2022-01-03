@@ -19,6 +19,30 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WomenSafety">
         <activity
+            android:name=".usernameFromGooglee"
+            android:exported="false" />
+        <activity
+            android:name=".FriendRequests"
+            android:exported="false" />
+        <activity
+            android:name=".trackerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".VerifyPhoneActivity"
+            android:exported="false" />
+        <activity
+            android:name=".phoneLogIn"
+            android:exported="false" />
+        <activity
+            android:name=".SignUp"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

@@ -5,14 +5,20 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.womensafety.model.Mylocation;
+import com.example.womensafety.model.Users;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -22,6 +28,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.womensafety.databinding.ActivityMapsBinding;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,21 +36,23 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
+import java.util.Random;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
 
+    private TextView textView;
     private Mylocation mylocation;
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
     private FirebaseDatabase database;
-    private DatabaseReference ref;
+    private DatabaseReference ref,hostRef;
     private LocationManager manager;
     Location location;
     LocationListener locationListener;
     private final int MIN_TIME=1000;
     private final int MIN_DISTANCE =1;
     Marker myMarker;
-
+FirebaseAuth auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,14 +61,65 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         database=FirebaseDatabase.getInstance();
-        ref=database.getReference().child("User-6969");
-        manager=(LocationManager)getSystemService(LOCATION_SERVICE);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
-    getLocationUpdates();
+        String ds= getIntent().getStringExtra("userID");
+       String uid= GoogleSignIn.getLastSignedInAccount(this).getId();
+
+       textView=findViewById(R.id.textView2);
+        Random r = new Random();
+        int randomNumber = r.nextInt(100000);
+       textView.setText(String.valueOf(randomNumber));
+       auth=FirebaseAuth.getInstance();
+       String userKaId=auth.getUid();
+        assert uid != null;
+        assert userKaId != null;
+        auth= FirebaseAuth.getInstance();
+        String usersId=auth.getCurrentUser().getUid();
+        ref= database.getReference().child("Users").child(usersId);
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Users users=new Users();
+                users= snapshot.getValue(Users.class);
+                String sdd= users.getUsername();
+                hostRef=database.getReference().child("Hosts").child(sdd).child(String.valueOf(randomNumber));
+                manager=(LocationManager)getSystemService(LOCATION_SERVICE);
+                // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+                SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                        .findFragmentById(R.id.map);
+                assert mapFragment != null;
+                mapFragment.getMapAsync( MapsActivity.this);
+                ActivityCompat.requestPermissions(MapsActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
+                getLocationUpdates();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+//        if(!TextUtils.isEmpty(ds))
+//        {
+//            hostRef=database.getReference().child("Hosts").child(ds).child(String.valueOf(randomNumber));
+//            manager=(LocationManager)getSystemService(LOCATION_SERVICE);
+//            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+//            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+//                    .findFragmentById(R.id.map);
+//            assert mapFragment != null;
+//            mapFragment.getMapAsync(this);
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
+//            getLocationUpdates();
+//        }
+//        else {
+//            ref = database.getReference().child("Hosts").child(userKaId).child(String.valueOf(randomNumber));
+//            manager = (LocationManager) getSystemService(LOCATION_SERVICE);
+//            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+//            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+//                    .findFragmentById(R.id.map);
+//            assert mapFragment != null;
+//            mapFragment.getMapAsync(this);
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
+//            getLocationUpdates();
+//        }
   //  readChanges();
     }
 
@@ -159,12 +219,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Add a marker in Sydney and move the camera
        // LatLng ltt=new LatLng(mylocation.getLatitude(),mylocation.getLongitude());
-       LatLng sydney = new LatLng(39, -121);
-        //LatLng myLatln=new LatLng(mylocation.getLatitude(),mylocation.getLongitude());
-      mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-//mMap.setMinZoomPreference(12);
-//mMap.getUiSettings().setAllGesturesEnabled(true);
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(sydney,10));
+//       LatLng sydney = new LatLng(39, -121);
+//        //LatLng myLatln=new LatLng(mylocation.getLatitude(),mylocation.getLongitude());
+//      mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+////mMap.setMinZoomPreference(12);
+////mMap.getUiSettings().setAllGesturesEnabled(true);
+//        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(sydney,10));
     }
 
     @Override
@@ -181,7 +241,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void saveLocation(Location location) {
-        ref.setValue(location);
+        hostRef.setValue(location);
     }
 
     @Override
@@ -210,7 +270,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             MarkerOptions markerOptions = new MarkerOptions();
             markerOptions.position(latLng);
             markerOptions.title(title);
-            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
             mMap.addMarker(markerOptions);
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
             mMap.animateCamera(CameraUpdateFactory.zoomTo(12));

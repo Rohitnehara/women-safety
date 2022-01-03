@@ -3,8 +3,18 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Coding/App devlpment/WomenSafety/app/src/main/res/drawable-v24/buttonbackground.xml" value="0.13148148148148148" />
+        <entry key="..\:/Coding/App devlpment/WomenSafety/app/src/main/res/drawable/fdss.xml" value="0.1" />
+        <entry key="..\:/Coding/App devlpment/WomenSafety/app/src/main/res/drawable/reqlayoout.xml" value="0.2484375" />
+        <entry key="..\:/Coding/App devlpment/WomenSafety/app/src/main/res/layout/activity_friend_requests.xml" value="0.232" />
         <entry key="..\:/Coding/App devlpment/WomenSafety/app/src/main/res/layout/activity_main.xml" value="0.23229166666666667" />
         <entry key="..\:/Coding/App devlpment/WomenSafety/app/src/main/res/layout/activity_maps.xml" value="0.264" />
+        <entry key="..\:/Coding/App devlpment/WomenSafety/app/src/main/res/layout/activity_phone_log_in.xml" value="0.1076923076923077" />
+        <entry key="..\:/Coding/App devlpment/WomenSafety/app/src/main/res/layout/activity_sign_up.xml" value="0.23229166666666667" />
+        <entry key="..\:/Coding/App devlpment/WomenSafety/app/src/main/res/layout/activity_tracker.xml" value="0.23229166666666667" />
+        <entry key="..\:/Coding/App devlpment/WomenSafety/app/src/main/res/layout/activity_username_from_googlee.xml" value="0.23229166666666667" />
+        <entry key="..\:/Coding/App devlpment/WomenSafety/app/src/main/res/layout/activity_verify_phone.xml" value="0.12037037037037036" />
+        <entry key="..\:/Coding/App devlpment/WomenSafety/app/src/main/res/layout/reqcard.xml" value="0.536" />
       </map>
     </option>
   </component>
