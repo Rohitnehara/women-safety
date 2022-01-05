@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#A9EDDCE5"
+    android:textAlignment="center"
+    tools:context=".MainActivity">
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/animationView"
+        android:layout_width="220dp"
+        android:layout_height="149dp"
+        android:layout_marginStart="75dp"
+        android:layout_marginTop="80dp"
+        android:layout_marginEnd="75dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.487"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/womenlocation" />
+
+    <TextView
+        android:id="@+id/Heading1"
+        android:layout_width="354dp"
+        android:layout_height="66dp"
+        android:text="GPS TRACKER"
+        android:textAlignment="center"
+        android:textColor="#595151"
+        android:textSize="50sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.491"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="60dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:layout_editor_absoluteX="0dp">
+
+        <EditText
+            android:id="@+id/usernameSignUp"
+            android:layout_width="match_parent"
+            android:layout_height="59dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="7dp"
+            android:background="@drawable/buttonbackground"
+            android:backgroundTint="#FFCCDD"
+            android:drawableLeft="@drawable/user__1_"
+            android:drawablePadding="10dp"
+            android:elevation="20dp"
+            android:ems="10"
+            android:hint="Enter User Name"
+            android:inputType="textEmailAddress"
+            android:padding="5dp" />
+
+        <EditText
+            android:id="@+id/EmailSignUp"
+            android:layout_width="match_parent"
+            android:layout_height="59dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="7dp"
+            android:background="@drawable/buttonbackground"
+            android:drawableLeft="@drawable/gmail"
+            android:drawablePadding="10dp"
+            android:elevation="20dp"
+            android:ems="10"
+            android:hint="Enter Email Address"
+            android:padding="5dp" />
+
+        <EditText
+            android:id="@+id/PasswordSignUp"
+            android:layout_width="match_parent"
+            android:layout_height="59dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="7dp"
+            android:background="@drawable/buttonbackground"
+            android:drawableLeft="@drawable/password"
+            android:drawablePadding="10dp"
+            android:elevation="20dp"
+            android:ems="10"
+            android:hint="Enter Password"
+            android:inputType="textPassword"
+            android:padding="5dp" />
+
+        <TextView
+            android:id="@+id/AlreadyAccount"
+            android:layout_width="403dp"
+            android:layout_height="33dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="7dp"
+            android:gravity="right"
+            android:paddingRight="30dp"
+            android:text="Already have an account? Log In"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/SignUP"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="7dp"
+            android:backgroundTint="#FFCCDD"
+            android:gravity="center"
+            android:hapticFeedbackEnabled="false"
+            android:padding="5dp"
+            android:text="Sign In"
+            android:textAlignment="center"
+            android:textColor="#000000"
+            android:textSize="20sp" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="21dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="33dp"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/googleSignUp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_margin="7dp"
+                android:backgroundTint="#FFCCDD"
+                android:drawableLeft="@drawable/google"
+                android:gravity="left"
+                android:hapticFeedbackEnabled="false"
+                android:padding="5dp"
+                android:text="Google"
+                android:textAlignment="center"
+                android:textColor="#000000"
+                android:textSize="20sp" />
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="43dp"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/phone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:layout_margin="7dp"
+                android:backgroundTint="#FFCCDD"
+                android:drawableLeft="@drawable/phonecall"
+                android:gravity="center"
+                android:hapticFeedbackEnabled="false"
+                android:padding="5dp"
+                android:text="phone"
+                android:textAlignment="center"
+                android:textColor="#000000"
+                android:textSize="20sp" />
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

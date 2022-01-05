@@ -4,25 +4,87 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#A9EDDCE5"
     tools:context=".MainActivity">
 
+    <LinearLayout
+        android:layout_width="477dp"
+        android:layout_height="607dp"
+        android:orientation="vertical">
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/animationVieww"
+            android:layout_width="match_parent"
+            android:layout_height="101dp"
+            android:layout_marginStart="75dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginEnd="75dp"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/host" />
+
+        <Button
+            android:id="@+id/host"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="228dp"
+            android:layout_marginEnd="152dp"
+            android:backgroundTint="#FFCCDD"
+            android:text="  tracker  "
+            android:textColor="#000000" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/annimationView"
+            android:layout_width="match_parent"
+            android:layout_height="101dp"
+            android:layout_marginStart="75dp"
+            android:layout_marginTop="476dp"
+            android:layout_marginEnd="75dp"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/friend" />
+
+        <Button
+            android:id="@+id/tracker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="180dp"
+            android:backgroundTint="#FFCCDD"
+            android:text="   host   "
+            android:textColor="#000000" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/aaanimationView"
+            android:layout_width="match_parent"
+            android:layout_height="101dp"
+            android:layout_marginStart="75dp"
+            android:layout_marginTop="304dp"
+            android:layout_marginEnd="75dp"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/tracker" />
+
+        <Button
+            android:id="@+id/frendReqs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="228dp"
+            android:backgroundTint="#FFCCDD"
+            android:text="  Friend Requests  "
+            android:textColor="#000000" />
+    </LinearLayout>
+
     <Button
-        android:id="@+id/tracker"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
-        android:layout_marginTop="316dp"
-        android:text="Tracker"
+        android:id="@+id/button"
+        android:layout_width="177dp"
+        android:layout_height="49dp"
+        android:layout_marginTop="756dp"
+        android:backgroundTint="#FFCCDD"
+        android:text="   logout   "
+        android:textColor="#000000"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/host"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="1dp"
-        android:layout_marginEnd="66dp"
-        android:text="host"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/tracker" />
 </androidx.constraintlayout.widget.ConstraintLayout>
