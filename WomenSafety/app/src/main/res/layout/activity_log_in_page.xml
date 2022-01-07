@@ -37,7 +37,7 @@
         app:layout_constraintTop_toBottomOf="@+id/animationView">
 
         <EditText
-            android:id="@+id/editTextTextEmailAddress"
+            android:id="@+id/EmaillogIn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -57,7 +57,7 @@
             android:padding="15dp" />
 
         <EditText
-            android:id="@+id/editTextNumberPassword"
+            android:id="@+id/passwordLogin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -89,7 +89,7 @@
             android:elevation="10dp" />
 
         <Button
-            android:id="@+id/button4"
+            android:id="@+id/SignUP"
             android:layout_width="225dp"
             android:layout_height="62dp"
             android:layout_gravity="center"
@@ -105,7 +105,7 @@
             android:elevation="10dp" />
 
         <Button
-            android:id="@+id/button8"
+            android:id="@+id/googleSignUp"
             android:layout_width="230dp"
             android:layout_height="58dp"
             android:layout_gravity="center"

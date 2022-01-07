@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentActivity;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -39,7 +40,7 @@ import java.util.List;
 import java.util.Random;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
-
+//host
     private TextView textView;
     private Mylocation mylocation;
     private GoogleMap mMap;
@@ -61,8 +62,7 @@ FirebaseAuth auth;
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         database=FirebaseDatabase.getInstance();
-        String ds= getIntent().getStringExtra("userID");
-       String uid= GoogleSignIn.getLastSignedInAccount(this).getId();
+
 
        textView=findViewById(R.id.textView2);
         Random r = new Random();
@@ -70,33 +70,25 @@ FirebaseAuth auth;
        textView.setText(String.valueOf(randomNumber));
        auth=FirebaseAuth.getInstance();
        String userKaId=auth.getUid();
-        assert uid != null;
+
         assert userKaId != null;
         auth= FirebaseAuth.getInstance();
         String usersId=auth.getCurrentUser().getUid();
         ref= database.getReference().child("Users").child(usersId);
-        ref.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Users users=new Users();
-                users= snapshot.getValue(Users.class);
-                String sdd= users.getUsername();
-                hostRef=database.getReference().child("Hosts").child(sdd).child(String.valueOf(randomNumber));
+
+        SharedPreferences sharedPreferences=getSharedPreferences("shared_Pref",MODE_PRIVATE);
+        String userFeromshare=sharedPreferences.getString("userName","nahi chala");
+                hostRef=database.getReference().child("Hosts").child(userFeromshare);
                 manager=(LocationManager)getSystemService(LOCATION_SERVICE);
                 // Obtain the SupportMapFragment and get notified when the map is ready to be used.
                 SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                         .findFragmentById(R.id.map);
                 assert mapFragment != null;
                 mapFragment.getMapAsync( MapsActivity.this);
-                ActivityCompat.requestPermissions(MapsActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
+                ActivityCompat.requestPermissions(MapsActivity.this, new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
                 getLocationUpdates();
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
 //        if(!TextUtils.isEmpty(ds))
 //        {
 //            hostRef=database.getReference().child("Hosts").child(ds).child(String.valueOf(randomNumber));
@@ -273,7 +265,7 @@ FirebaseAuth auth;
             markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
             mMap.addMarker(markerOptions);
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(12));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
         }
     }
 }

@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,13 +31,22 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 
 public class SignUp extends AppCompatActivity {
     private FirebaseAuth auth;
     FirebaseDatabase database;
+    DatabaseReference ref;
     ProgressDialog progressDialog;
     GoogleSignInClient googleSignInClient;
     private EditText username,email,password;
@@ -50,12 +58,12 @@ public class SignUp extends AppCompatActivity {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = auth.getCurrentUser();
+        ref=database.getReference().child("UserNames");
+
 //        updateUI(currentUser);
         if (auth.getCurrentUser() != null) {
-
             Intent intt = new Intent(SignUp.this, MainActivity.class);
             startActivity(intt);
-
         }
     }
     @Override
@@ -80,8 +88,8 @@ public class SignUp extends AppCompatActivity {
         email=findViewById(R.id.EmailSignUp);
         password=findViewById(R.id.EmailSignUp);
 
-        signUp=findViewById(R.id.SignUP);
-        googleSignUp=findViewById(R.id.googleSignUp);
+        signUp=findViewById(R.id.SignIn);
+        googleSignUp=findViewById(R.id.googleSignIn);
 
         already=findViewById(R.id.AlreadyAccount);
 phone=findViewById(R.id.phone);
@@ -112,6 +120,21 @@ startActivity(intent);
             public void onClick(View view) {
                 if (!email.getText().toString().isEmpty() && !password.getText().toString().isEmpty()
                         && !username.getText().toString().isEmpty()) {
+
+                    ref = database.getReference().child("UserNames");
+                    ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    if(snapshot.child(username.getText().toString()).exists()) {
+                                        Toast.makeText(getApplicationContext(), "User name alread exists", Toast.LENGTH_SHORT).show();
+                                    }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
                     progressDialog.show();
                     auth.createUserWithEmailAndPassword(email.getText().toString(), password.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
@@ -128,11 +151,20 @@ startActivity(intent);
                                            //here we take result from fire base
                                            String id = Objects.requireNonNull(task1.getResult().getUser()).getUid();
                                            //this code writes result from firebase to the database
+                                           Date c = Calendar.getInstance().getTime();
+                                           System.out.println("Current time => " + c);
+
+                                           SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
+                                           String formattedDate = df.format(c);
+                                           ref.child(username.getText().toString()).setValue(formattedDate);
 
                                            //here child("users") creates a child named as user
                                            database.getReference().child("Users").child(id).setValue(user);
+                                           SharedPreferences prefEmail = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
+                                           SharedPreferences.Editor editor = prefEmail.edit();
+                                           editor.putString("UserEmail",task1.getResult().getUser().getUid());
+                                           editor.apply();
                                            Intent intent=new Intent(SignUp.this,MainActivity.class);
-                                           intent.putExtra("userName",username.getText().toString());
                                            startActivity(intent);
 
                                        }
@@ -207,17 +239,29 @@ startActivity(intent);
                 users.setUserId(account.getId());
                 users.setUsername(account.getDisplayName());
                 users.setProfilePic(account.getPhotoUrl().toString());
+                SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
+                SharedPreferences.Editor editor = pref.edit();
+                editor.putString("displayName",account.getDisplayName());
+                editor.putString("userId",account.getId());
+                editor.apply();
 
                 ///
                 database.getReference().child("Users").child(account.getId()).setValue(users);
 
+                Date c = Calendar.getInstance().getTime();
+                System.out.println("Current time => " + c);
+
+                SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
+                String formattedDate = df.format(c);
+
+                ref.child(account.getDisplayName()).setValue(formattedDate);
                 ///
 
                 Log.d(TAG, "firebaseAuthWithGoogle:" + account.getId());
                 firebaseAuthWithGoogle(account.getIdToken());
 
 //
-                Intent intent = new Intent(SignUp.this, usernameFromGooglee.class);
+                Intent intent = new Intent(SignUp.this, MainActivity.class);
 
                 startActivity(intent);
             } catch (ApiException e) {

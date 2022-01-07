@@ -16,6 +16,7 @@ import com.example.womensafety.model.Users;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -41,7 +42,7 @@ private DatabaseReference ref;
         tracker=findViewById(R.id.tracker);
         host=findViewById(R.id.host);
         logOut=findViewById(R.id.button);
-        random=findViewById(R.id.textView);
+        random=findViewById(R.id.textView8);
        database=FirebaseDatabase.getInstance();
        frendReqs=findViewById(R.id.frendReqs);
        sharedUsername=findViewById(R.id.textView);
@@ -65,10 +66,11 @@ frendReqs.setOnClickListener(new View.OnClickListener() {
 //    random.setText(userName);
 //}
 //
-        auth= FirebaseAuth.getInstance();
-        String usersId= Objects.requireNonNull(auth.getCurrentUser()).getUid();
+//        auth= FirebaseAuth.getInstance();
+//        String usersId= FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser() ;
+        String usersId= currentFirebaseUser.getUid();
         ref= database.getReference().child("Users").child(usersId);
-        random.setText(usersId);
 ref.addListenerForSingleValueEvent(new ValueEventListener() {
     @Override
     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -76,7 +78,7 @@ ref.addListenerForSingleValueEvent(new ValueEventListener() {
         if(snapshot.exists()){
             users= snapshot.getValue(Users.class);
             String sdd= users.getUsername();
-            random.setText(sdd);
+            random.setText("Welcome! "+sdd);
 
             //shRED PREF
             SharedPreferences sharedPreferences=getSharedPreferences("shared_Pref",MODE_PRIVATE);
@@ -86,7 +88,9 @@ ref.addListenerForSingleValueEvent(new ValueEventListener() {
 
         }
         else {
-            Toast.makeText(getApplicationContext(), "Username not found", Toast.LENGTH_SHORT).show();
+            SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
+            String userssss=pref.getString("displayName"," ");
+            random.setText(userssss);
         }
 
 
