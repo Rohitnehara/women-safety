@@ -22,6 +22,9 @@
             android:name=".Log_in_page"
             android:exported="false" />
         <activity
+            android:name=".chatActivity"
+            android:exported="false" />
+        <activity
             android:name=".usernameFromGooglee"
             android:exported="false" />
         <activity
