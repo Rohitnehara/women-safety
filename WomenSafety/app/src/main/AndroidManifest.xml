@@ -30,6 +30,8 @@
         <activity
             android:name=".FriendRequests"
             android:exported="false" />
+        <activity android:name=".ViewPlace"
+            android:exported="false"/>
         <activity
             android:name=".trackerActivity"
             android:exported="false" />
