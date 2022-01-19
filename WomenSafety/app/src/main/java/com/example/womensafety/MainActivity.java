@@ -27,7 +27,7 @@ import java.util.Objects;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
-private Button tracker,host,logOut,frendReqs;
+private Button tracker,host,logOut,frendReqs,botBtn;
 private TextView random,sharedUsername;
 private FirebaseAuth auth;
 
@@ -46,6 +46,7 @@ private DatabaseReference ref;
        database=FirebaseDatabase.getInstance();
        frendReqs=findViewById(R.id.frendReqs);
        sharedUsername=findViewById(R.id.textView);
+       botBtn=findViewById(R.id.botBtn);
 
         GoogleSignInAccount account = null;
 //      String userFromGooglr=  account.getId();
@@ -53,6 +54,14 @@ frendReqs.setOnClickListener(new View.OnClickListener() {
     @Override
     public void onClick(View v) {
         Intent intent=new Intent(MainActivity.this,FriendRequests.class);
+        startActivity(intent);
+    }
+});
+
+botBtn.setOnClickListener(new View.OnClickListener() {
+    @Override
+    public void onClick(View v) {
+        Intent intent=new Intent(MainActivity.this,chatActivity.class);
         startActivity(intent);
     }
 });
