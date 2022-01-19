@@ -2,14 +2,18 @@ package com.example.womensafety;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -17,6 +21,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import com.example.womensafety.model.MyPlaces;
+import com.example.womensafety.model.Mylocation;
 import com.example.womensafety.model.Results;
 import com.example.womensafety.Remote.IGoogleAPIService;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -33,6 +38,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -40,7 +49,7 @@ import retrofit2.Response;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 {
-
+    private Mylocation mylocation;
     private static final int MY_PERMISSION_CODE = 1000;
     private GoogleMap mMap;
 
@@ -49,7 +58,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Location mLastLocation;
     private Marker mMarker;
 
-
+    private FirebaseDatabase database;
+    private DatabaseReference ref,hostRef;
+    private LocationManager manager;
+    Location location;
+    LocationListener locationListener;
+    private final int MIN_TIME=1000;
+    private final int MIN_DISTANCE =1;
 
     IGoogleAPIService mService;
 
@@ -65,6 +80,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        database=FirebaseDatabase.getInstance();
+        SharedPreferences sharedPreferences=getSharedPreferences("shared_Pref",MODE_PRIVATE);
+        String userFeromshare=sharedPreferences.getString("userName","nahi chala");
+        hostRef=database.getReference().child("Hosts").child(userFeromshare);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -104,7 +124,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        //Init location
+
         buildLocationCallBack();
         buildLocationRequest();
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -130,7 +150,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void buildLocationCallBack() {
         locationCallback = new LocationCallback(){
-            //Ctrl+0
+
 
             @Override
             public void onLocationResult(LocationResult locationResult) {
@@ -148,7 +168,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
                 mMarker = mMap.addMarker(markerOptions);
 
-                //Move Camera
+
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
                 mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
             }
@@ -190,11 +210,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 else
                                     markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_other));
 
-                                markerOptions.snippet(String.valueOf(i)); //Assign index for marker
+                                markerOptions.snippet(String.valueOf(i));
 
-                                //Add to map
                                 mMap.addMarker(markerOptions);
-                                //Move camera
+
                                 mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
                                 mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
 
@@ -238,6 +257,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    private void getLocationUpdates() {
+        if(manager!=null) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, (LocationListener) this);
+
+                } else if (manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                    manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, (LocationListener) this);
+                } else {
+                    Toast.makeText(getApplicationContext(), "No provider enabled", Toast.LENGTH_SHORT).show();
+                }
+            }
+            else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
+
+            }
+        }
+    }
 
 
     @Override
@@ -246,6 +284,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         switch (requestCode) {
             case MY_PERMISSION_CODE: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    getLocationUpdates();
                     if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
                         mMap.setMyLocationEnabled(true);
@@ -261,6 +300,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+
+    public void onLocationChanged(Location location) {
+
+        if(location !=null){
+            saveLocation(location);
+            drawMarker(location, getText(R.string.i_am_here).toString());
+            //manager.removeUpdates(locationListener);
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(), "Location nahi mill rahi", Toast.LENGTH_SHORT).show();
+        }
+    }
+    private void drawMarker(Location location, String title) {
+        if (this.mMap != null) {
+            mMap.clear();
+            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+            MarkerOptions markerOptions = new MarkerOptions();
+            markerOptions.position(latLng);
+            markerOptions.title(title);
+            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+            mMap.addMarker(markerOptions);
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+        }
+    }
+    private void saveLocation(Location location) {
+        hostRef.setValue(location);
+    }
+
+    @Override
+    public void onLocationChanged(@NonNull List<Location> locations) {
+
+    }
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
