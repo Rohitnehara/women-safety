@@ -114,9 +114,9 @@
 
     <TextView
         android:id="@+id/Heading1"
-        android:layout_width="354dp"
-        android:layout_height="66dp"
-        android:text="GPS TRACKER"
+        android:layout_width="399dp"
+        android:layout_height="74dp"
+        android:text="ways with you"
         android:textAlignment="center"
         android:textColor="#C30202"
         android:textSize="50sp"
