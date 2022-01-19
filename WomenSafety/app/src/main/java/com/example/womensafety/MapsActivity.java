@@ -1,30 +1,28 @@
 package com.example.womensafety;
 
 import android.Manifest;
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
+
 import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.Toast;
+import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
-import com.example.womensafety.model.Mylocation;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
+import com.example.womensafety.model.MyPlaces;
+import com.example.womensafety.model.Results;
+import com.example.womensafety.Remote.IGoogleAPIService;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -34,267 +32,271 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import java.io.IOException;
-import java.util.List;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
-        GoogleApiClient.ConnectionCallbacks,
-GoogleApiClient.OnConnectionFailedListener,
-LocationListener{
-    private Mylocation mylocation;
-    private FirebaseDatabase database;
-    private DatabaseReference ref,hostRef;
-    private LocationManager manager;
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
+{
+
+    private static final int MY_PERMISSION_CODE = 1000;
     private GoogleMap mMap;
-    private GoogleApiClient client;
-    private LocationRequest locationRequest;
-    private Location lastlocation;
-    private Marker currentLocationmMarker;
-    public static final int REQUEST_LOCATION_CODE = 99;
-    int PROXIMITY_RADIUS = 10000;
-    double latitude,longitude;
+
+
+    private double latitude,longitude;
+    private Location mLastLocation;
+    private Marker mMarker;
+
+
+
+    IGoogleAPIService mService;
+
+    MyPlaces currentPlace;
+
+    //New Location
+            FusedLocationProviderClient fusedLocationProviderClient;
+            LocationCallback locationCallback;
+            private LocationRequest mLocationRequest;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        database=FirebaseDatabase.getInstance();
-        //assert userKaId != null;
-//        auth= FirebaseAuth.getInstance();
-//        String usersId=auth.getCurrentUser().getUid();
-//        ref= database.getReference().child("Users").child(usersId);
-        SharedPreferences sharedPreferences=getSharedPreferences("shared_Pref",MODE_PRIVATE);
-        String userFeromshare=sharedPreferences.getString("userName","nahi chala");
-        hostRef=database.getReference().child("Hosts").child(userFeromshare);
-        manager=(LocationManager)getSystemService(LOCATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-        {
-            checkLocationPermission();
-
-        }
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        //Init Service
+        mService = Common.getGoogleAPIService();
+
+        //Request Runtime permission
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            checkLocationPermission();
+        }
+
+        BottomNavigationView bottomNavigationView =(BottomNavigationView)findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                //Code late
+                switch (menuItem.getItemId())
+                {
+                    case R.id.action_hotel:
+                        nearByPlace("Hotel");
+                        break;
+                    case R.id.action_hospital:
+                        nearByPlace("hospital");
+                        break;
+                    case R.id.action_restaurant:
+                        nearByPlace("restaurant");
+                        break;
+                    case R.id.action_school:
+                        nearByPlace("school");
+                        break;
+                     default:
+                         break;
+                }
+                return true;
+            }
+        });
+
+        //Init location
+        buildLocationCallBack();
+        buildLocationRequest();
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationProviderClient.requestLocationUpdates(mLocationRequest,locationCallback,Looper.myLooper());
     }
+
+    //Ctrl+o
+
+
+    @Override
+    protected void onStop() {
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+        super.onStop();
+    }
+
+    private void buildLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setSmallestDisplacement(10f);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+    }
+
+    private void buildLocationCallBack() {
+        locationCallback = new LocationCallback(){
+            //Ctrl+0
+
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+                mLastLocation = locationResult.getLastLocation();
+                if(mMarker != null)
+                    mMarker.remove();
+                latitude =  mLastLocation.getLatitude();
+                longitude =  mLastLocation.getLongitude();
+
+                LatLng latLng = new LatLng(latitude,longitude);
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(latLng)
+                        .title("Your position")
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                mMarker = mMap.addMarker(markerOptions);
+
+                //Move Camera
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+            }
+        };
+    }
+
+    private void nearByPlace(final String placeType) {
+        mMap.clear();
+        String url = getUrl(latitude,longitude,placeType);
+
+        mService.getNearByPlaces(url)
+                .enqueue(new Callback<MyPlaces>() {
+                    @Override
+                    public void onResponse(Call<MyPlaces> call, Response<MyPlaces> response) {
+
+                        currentPlace = response.body(); //assign value for currentPlace
+
+                        if(response.isSuccessful())
+                        {
+                            for(int i=0;i<response.body().getResults().length;i++)
+                            {
+                                MarkerOptions markerOptions = new MarkerOptions();
+                                Results googlePlace = response.body().getResults()[i];
+                                double lat = Double.parseDouble(googlePlace.getGeometry().getLocation().getLat());
+                                double lng = Double.parseDouble(googlePlace.getGeometry().getLocation().getLng());
+                                String placeName = googlePlace.getName();
+                                String vicinity = googlePlace.getVicinity();
+                                LatLng latLng = new LatLng(lat,lng);
+                                markerOptions.position(latLng);
+                                markerOptions.title(placeName);
+                                if(placeType.equals("Hotel"))
+                                    markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_hotel));
+                                else if(placeType.equals("hospital"))
+                                    markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_hospital));
+                                else if(placeType.equals("restaurant"))
+                                    markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_restaurants));
+                                else if(placeType.equals("school"))
+                                    markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_school));
+                                else
+                                    markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_other));
+
+                                markerOptions.snippet(String.valueOf(i)); //Assign index for marker
+
+                                //Add to map
+                                mMap.addMarker(markerOptions);
+                                //Move camera
+                                mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                                mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<MyPlaces> call, Throwable t) {
+
+                    }
+                });
+    }
+
+    private String getUrl(double latitude, double longitude, String placeType) {
+        StringBuilder googlePlacesUrl = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+        googlePlacesUrl.append("location="+latitude+","+longitude);
+        googlePlacesUrl.append("&radius="+10000);
+        googlePlacesUrl.append("&type="+placeType);
+        googlePlacesUrl.append("&sensor=true");
+        googlePlacesUrl.append("&key="+getResources().getString(R.string.browser_key));
+        Log.d("getUrl",googlePlacesUrl.toString());
+        return googlePlacesUrl.toString();
+    }
+
+    private boolean checkLocationPermission() {
+        if(ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            if(ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.ACCESS_FINE_LOCATION))
+                ActivityCompat.requestPermissions(this,new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                },MY_PERMISSION_CODE);
+            else
+                ActivityCompat.requestPermissions(this,new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                },MY_PERMISSION_CODE);
+            return false;
+        }
+        else
+            return true;
+
+    }
+
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch(requestCode)
-        {
-            case REQUEST_LOCATION_CODE:
-                if(grantResults.length >0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                {
-                    if(ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) !=  PackageManager.PERMISSION_GRANTED)
-                    {
-                        if(client == null)
-                        {
-                            bulidGoogleApiClient();
-                        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case MY_PERMISSION_CODE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
                         mMap.setMyLocationEnabled(true);
+                        buildLocationCallBack();
+                        buildLocationRequest();
+                        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+                        fusedLocationProviderClient.requestLocationUpdates(mLocationRequest, locationCallback, Looper.myLooper());
                     }
                 }
-                else
-                {
-                    Toast.makeText(this,"Permission Denied" , Toast.LENGTH_LONG).show();
-                }
+
+            }
+            break;
         }
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            bulidGoogleApiClient();
-            mMap.setMyLocationEnabled(true);
-        }
-    }
+        //Init Google Play Services
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-
-    protected synchronized void bulidGoogleApiClient() {
-        client = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addOnConnectionFailedListener(this).addApi(LocationServices.API).build();
-        client.connect();
-
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-
-        latitude = location.getLatitude();
-        longitude = location.getLongitude();
-        lastlocation = location;
-        if(currentLocationmMarker != null)
-        {
-            saveLocation(location);
-            currentLocationmMarker.remove();
-        }
-        Log.d("lat = ",""+latitude);
-        LatLng latLng = new LatLng(location.getLatitude() , location.getLongitude());
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(latLng);
-        markerOptions.title("Current Location");
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-        currentLocationmMarker = mMap.addMarker(markerOptions);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomBy(10));
-
-        if(client != null)
-        {
-            LocationServices.FusedLocationApi.removeLocationUpdates(client,this);
-        }
-    }
-
-    public void onClick(View v)
-    {
-        Object dataTransfer[] = new Object[2];
-        GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
-
-        switch(v.getId())
-        {
-            case R.id.B_search:
-                EditText tf_location =  findViewById(R.id.TF_location);
-                String location = tf_location.getText().toString();
-                List<Address> addressList;
-
-
-                if(!location.equals(""))
-                {
-                    Geocoder geocoder = new Geocoder(this);
-
-                    try {
-                        addressList = geocoder.getFromLocationName(location, 5);
-
-                        if(addressList != null)
-                        {
-                            for(int i = 0;i<addressList.size();i++)
-                            {
-                                LatLng latLng = new LatLng(addressList.get(i).getLatitude() , addressList.get(i).getLongitude());
-                                MarkerOptions markerOptions = new MarkerOptions();
-                                markerOptions.position(latLng);
-                                markerOptions.title(location);
-                                mMap.addMarker(markerOptions);
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                                mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
-                            }
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                break;
-            case R.id.B_hopistals:
-                mMap.clear();
-                String hospital = "hospital";
-                String url = getUrl(latitude, longitude, hospital);
-                dataTransfer[0] = mMap;
-                dataTransfer[1] = url;
-
-                getNearbyPlacesData.execute(dataTransfer);
-                Toast.makeText(MapsActivity.this, "Showing Nearby Hospitals", Toast.LENGTH_SHORT).show();
-                break;
-
-
-            case R.id.B_schools:
-                mMap.clear();
-                String school = "school";
-                url = getUrl(latitude, longitude, school);
-                dataTransfer[0] = mMap;
-                dataTransfer[1] = url;
-
-                getNearbyPlacesData.execute(dataTransfer);
-                Toast.makeText(MapsActivity.this, "Showing Nearby Schools", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.B_restaurants:
-                mMap.clear();
-                String resturant = "restuarant";
-                url = getUrl(latitude, longitude, resturant);
-                dataTransfer[0] = mMap;
-                dataTransfer[1] = url;
-
-                getNearbyPlacesData.execute(dataTransfer);
-                Toast.makeText(MapsActivity.this, "Showing Nearby Restaurants", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.B_to:
-        }
-    }
-
-
-    private String getUrl(double latitude , double longitude , String nearbyPlace)
-    {
-
-        StringBuilder googlePlaceUrl = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
-        googlePlaceUrl.append("location="+latitude+","+longitude);
-        googlePlaceUrl.append("&radius="+PROXIMITY_RADIUS);
-        googlePlaceUrl.append("&type="+nearbyPlace);
-        googlePlaceUrl.append("&sensor=true");
-        googlePlaceUrl.append("&key="+getString(R.string.google_maps_key));
-
-        Log.d("MapsActivity", "url = "+googlePlaceUrl.toString());
-
-        return googlePlaceUrl.toString();
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-        locationRequest = new LocationRequest();
-        locationRequest.setInterval(100);
-        locationRequest.setFastestInterval(1000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-
-
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION ) == PackageManager.PERMISSION_GRANTED)
-        {
-            LocationServices.FusedLocationApi.requestLocationUpdates(client, locationRequest, this);
-        }
-    }
-
-
-    public boolean checkLocationPermission()
-    {
-        if(ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED )
-        {
-
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.ACCESS_FINE_LOCATION))
-            {
-                ActivityCompat.requestPermissions(this,new String[] {Manifest.permission.ACCESS_FINE_LOCATION },REQUEST_LOCATION_CODE);
+                mMap.setMyLocationEnabled(true);
             }
+        }
             else
             {
-                ActivityCompat.requestPermissions(this,new String[] {Manifest.permission.ACCESS_FINE_LOCATION },REQUEST_LOCATION_CODE);
+
+                mMap.setMyLocationEnabled(true);
             }
-            return false;
 
+            // Make event click on Marker
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                if(marker.getSnippet() != null ) {
+                    //When user select marker, just get Result of place and assign to static variable
+                    Common.currentResult = currentPlace.getResults()[Integer.parseInt(marker.getSnippet())];
+                    // start new activity
+                    startActivity(new Intent(MapsActivity.this, ViewPlace.class));
+                }
+                return true;
+            }
+        });
         }
-        else
-            return true;
-    }
 
-    private void saveLocation(Location location) {
-        hostRef.setValue(location);
-    }
 
-    public void onLocationChanged(@NonNull List<Location> locations) {
 
-    }
-    @Override
-    public void onConnectionSuspended(int i) {
-    }
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-    }
+
+
 }
+
